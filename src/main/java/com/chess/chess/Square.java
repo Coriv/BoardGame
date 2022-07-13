@@ -59,4 +59,12 @@ public class Square extends Rectangle {
     public int getUniqueNumber() {
         return uniqueNumber;
     }
+
+    @Override
+    public String toString() {
+        return "Square{" +
+                "X=" + squareAxisX +
+                "`y=" + squareAxisY +
+                '}';
+    }
 }

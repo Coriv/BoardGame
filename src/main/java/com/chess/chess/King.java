@@ -2,22 +2,14 @@ package com.chess.chess;
 
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.layout.GridPane;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-public class King extends Button implements Piece {
-    private int x;
-    private int y;
-
-    public King(String text, Node graphic) {
-        super(text, graphic);
+public class King extends Piece {
+    public King(String text, Node graphic, boolean isWhite, int x, int y) {
+        super(text, graphic, isWhite, x, y);
     }
-
     @Override
     public Set<Square> getAvailableSquareToMove(Piece piece) {
        Set<Square> sqList = new HashSet<>();
@@ -36,23 +28,5 @@ public class King extends Button implements Piece {
        Set<Square> correctedSet = piece.correctSet(sqList);
 
        return correctedSet;
-    }
-
-    @Override
-    public int getX() {
-        return x;
-    }
-
-    @Override
-    public int getY() {
-        return y;
-    }
-
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public void setY(int y) {
-        this.y = y;
     }
 }

@@ -2,17 +2,13 @@ package com.chess.chess;
 
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.layout.GridPane;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-public class Queen extends Button implements Piece {
-    private int x;
-    private int y;
-    public Queen(String text, Node graphic) {
-        super(text, graphic);
+public class Queen extends Piece {
+    public Queen(String text, Node graphic, boolean isWhite, int x, int y) {
+        super(text, graphic, isWhite, x, y);
     }
 
     @Override
@@ -47,25 +43,5 @@ public class Queen extends Button implements Piece {
         }
         Set<Square> correctedSet = piece.correctSet(sqSet);
         return correctedSet;
-    }
-
-    @Override
-    public int getX() {
-        return this.x;
-    }
-
-    @Override
-    public int getY() {
-        return this.y;
-    }
-
-    @Override
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    @Override
-    public void setY(int y) {
-        this.y = y;
     }
 }

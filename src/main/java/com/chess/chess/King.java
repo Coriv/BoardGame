@@ -23,7 +23,6 @@ public class King extends Piece {
                Square itsSelf = new Square(d, d, d, d, piece.getX(), piece.getY(), 1);
                sqList.remove(itsSelf);
            }
-           System.out.println(" ROZMIAR LISTY: " + sqList.size());
        }
        Set<Square> correctedSet = piece.correctSet(sqList);
 

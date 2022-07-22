@@ -14,64 +14,69 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import kotlin.collections.IntIterator;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 
-public class HelloApplication extends Application {
+public class ChessGam extends Application {
 
-    private Image imageback = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/szmaragdowe.jpg");
+    private final Image imageback = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/szmaragdowe.jpg");
 
-    private Image kingWhiteImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/kingWhite.png");
-    private Image queenWhiteImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/queenWhite.png");
-    private Image bishopWhiteImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/bishopWhite.png");
-    private Image knightWhiteImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/knightWhite.png");
-    private Image rockWhiteImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/rockWhite.png");
-    private Image pointWhiteImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/pointWhite.png");
+    private final Image kingWhiteImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/kingWhite.png");
+    private final Image queenWhiteImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/queenWhite.png");
+    private final Image bishopWhiteImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/bishopWhite.png");
+    private final Image knightWhiteImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/knightWhite.png");
+    private final Image rockWhiteImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/rockWhite.png");
+    private final Image pointWhiteImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/pointWhite.png");
 
-    private Image kingBlackImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/kingBlack.png");
-    private Image queenBlackImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/queenBlack.png");
-    private Image bishopBlackImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/bishopBlack.png");
-    private Image knightBlackImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/knightBlack.png");
-    private Image rockBlackImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/rockBlack.png");
-    private Image pointBlackImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/pointBlack.png");
+    private final Image kingBlackImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/kingBlack.png");
+    private final Image queenBlackImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/queenBlack.png");
+    private final Image bishopBlackImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/bishopBlack.png");
+    private final Image knightBlackImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/knightBlack.png");
+    private final Image rockBlackImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/rockBlack.png");
+    private final Image pointBlackImage = new Image("File:/Users/sebastianboron/IdeaProjects/Chess/src/main/resources/pointBlack.png");
 
     private Piece pieceToMove;
     private Piece pieceToBeat;
     private Set<Square> availableSquares;
     private Set<Square> setOfSquares = new HashSet<>();
-    private Set<Piece> whitePiece;
-    private Set<Piece> blackPiece;
+    private Set<Piece> pieces  = new HashSet<>();
+    private static Set<Piece> whitePiece;
+    private static Set<Piece> blackPiece;
     private Set<Piece> setOfPointsW = new HashSet<>();
     private Set<Piece> setOfPointsB = new HashSet<>();
+    private Set<Square> allPossibleMoves;
+    private Set<Square> getAllPossibleMovesBlack;
 
     private GridPane grid = new GridPane();
     private GridPane gridToEdit = new GridPane();
     private Set<Square> excludedSet;
+    private King checkKing;
 
+    private boolean isCheck;
+
+    private boolean whiteTurn = true;
     int counter;
 
     void prepareExcludedSet() {
         excludedSet = new HashSet<>();
         ObservableList<Node> children = grid.getChildren();
 
-        Set<Piece> piecesOnBoard = new HashSet<>();
+        Set<Piece> piecesOnBoard = children.stream()
+                        .filter(n -> n instanceof Piece)
+                        .map(n -> (Piece) n)
+                        .collect(Collectors.toSet());
 
-        for (Node n : children) {
-            if( n instanceof Piece) {
-                Piece p = (Piece) n;
-                piecesOnBoard.add(p);
-            }
-        }
+        excludedSet = piecesOnBoard.stream()
+                .map(n -> new Square(1, 1, 1, 1, n.getX(), n.getY(), 1))
+                .collect(Collectors.toSet());
+    }
 
-        for (Piece p : piecesOnBoard) {
-            int d = 100;
-            Square sq = new Square(d, d, d, d, p.getX(), p.getY(), 1);
-            excludedSet.add(sq);
-        }
-        System.out.println("ROZMIAR piece on board: " + excludedSet.size());
+    void whosTurn(Piece piece) {
+
     }
 
     Set<Square> preparePossibleMovments(Piece piece) {
@@ -81,49 +86,46 @@ public class HelloApplication extends Application {
         int t = piece.getY();
         int d = 100;
 
-        for (int i = 1; i < 9; i++) {
+        for (int i = 1; i < 8; i++) {
             Square sqXx = new Square(d, d, d, d, r + i, t, 1);
             avaiableSET.add(sqXx);
-            System.out.println(excludedSet.contains(sqXx));
             if (excludedSet.contains(sqXx)) {break;}
         }
-        for (int i = 1; i < 9; i++) {
+        for (int i = 1; i < 8; i++) {
             Square sqX = new Square(d, d, d, d, r - i, t, 1);
             avaiableSET.add(sqX);
             if (excludedSet.contains(sqX)) {break;}
         }
-        for (int i = 1; i < 9; i++) {
+        for (int i = 1; i < 8; i++) {
             Square sqYy = new Square(d, d, d, d, r, t + i, 1);
             avaiableSET.add(sqYy);
             if (excludedSet.contains(sqYy)) {break;}
         }
-        for (int i = 1; i < 9; i++) {
+        for (int i = 1; i < 8; i++) {
             Square sqY = new Square(d, d, d, d, r, t - i, 1);
             avaiableSET.add(sqY);
             if (excludedSet.contains(sqY)) { break;}
         }
-        for (int i =1; i<9; i++) {
+        for (int i =1; i<8; i++) {
             Square s1 = new Square(d, d, d, d, r+i , t+i,1);
             avaiableSET.add(s1);
             if(excludedSet.contains(s1)) { break;}
         }
-        for (int i =1; i<9; i++) {
+        for (int i =1; i<8; i++) {
             Square s2 = new Square(d, d, d, d,r+i, t-i, 1);
             avaiableSET.add(s2);
             if(excludedSet.contains(s2)) { break;}
         }
-        for (int i =1; i<9; i++) {
+        for (int i =1; i<8; i++) {
             Square s3 = new Square(d, d, d, d, r-i, t+i, 1);
             avaiableSET.add(s3);
             if(excludedSet.contains(s3)) { break;}
         }
-        for (int i =1; i<9; i++) {
+        for (int i =1; i<8; i++) {
             Square s4 = new Square(d, d, d, d, r-i, t-i, 1);
             avaiableSET.add(s4);
             if(excludedSet.contains(s4)) { break;}
         }
-        System.out.println("GODZINA 22:12 rozmiar avaibleSET:" + avaiableSET.size());
-        System.out.println("GOESINA 22:23 rosmiwr this set " + excludedSet.size() );
 
         return avaiableSET.stream()
                 .filter(n -> n.getSquareAxisX() >= 0)
@@ -133,6 +135,31 @@ public class HelloApplication extends Application {
                 .collect(Collectors.toSet());
     }
 
+   /*void preparePossibleMovesToCheckWhite() {
+        for (Piece p : whitePiece) {
+            p.getAvailableSquareToMove(p);
+            makeSquaresBlackWhite();
+            allPossibleMovesWhite.addAll(availableSquares);
+        }
+   } */
+
+    boolean isCheck(King king) {
+        Square sq = new Square(1,1,1,1, king.getX(), king.getY(), 1);
+        allPossibleMoves = new HashSet<Square>();
+        if(king.isWhite()) {
+            for (Piece p : whitePiece) {
+            p.getAvailableSquareToMove(p);
+            makeSquaresBlackWhite();
+            allPossibleMoves.addAll(availableSquares);
+        }} else {
+            for (Piece p : blackPiece) {
+                p.getAvailableSquareToMove(p);
+                makeSquaresBlackWhite();
+                allPossibleMoves.addAll(availableSquares);
+            }
+        }
+        return allPossibleMoves.contains(sq);
+    }
     void makeSquaresBlackWhite() {
         for(Square se : getSetOfSquares()) {
             se.setFill(Color.BLACK);
@@ -140,22 +167,16 @@ public class HelloApplication extends Application {
                 se.setFill(Color.WHITE);
             }}
     }
-
-    // TUTAJ DODAJE metoduy obsrvatory
-
     void getAvailableSquare(Piece move) {
         makeSquaresBlackWhite();
         availableSquares = new HashSet<>();
         Set<Square> squareToCompare = move.getAvailableSquareToMove(move);
         Set<Square> intersection = new HashSet<>(setOfSquares);
         intersection.retainAll(squareToCompare);
-        System.out.println("SET PO KLIKNIECIU !!!!! :D:D + " + preparePossibleMovments(move).size());
-        System.out.println("SET PO KLIKNIECIU!! :::D:D + " + preparePossibleMovments(move));
-        if(move instanceof Queen || move instanceof Rock || move instanceof Bishop) {
+        if(move instanceof Queen || move instanceof Rock || move instanceof Bishop || move instanceof Point) {
             intersection.retainAll(preparePossibleMovments(move));
         }
         availableSquares.addAll(intersection);
-        System.out.println("AVAILAGLE SQUAEES : "  + availableSquares.size());
         for (Square sq:availableSquares) {
             sq.setFill(Color.LIGHTBLUE);
         }
@@ -190,7 +211,7 @@ public class HelloApplication extends Application {
 
         //Squares adding
         int count =0;
-        int d = 80;
+        int d = 93;
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Square square = new Square(d, d, d, d, j, i, count);
@@ -240,20 +261,17 @@ public class HelloApplication extends Application {
                 .collect(Collectors.toSet());
         blackPiece.addAll(setOfPointsB);
 
-        Set<Piece> pieces = whitePiece;
+        pieces.addAll(whitePiece);
         pieces.addAll(blackPiece);
 
-
-        System.out.println("Size of `white piece " + whitePiece.size());
-        System.out.println("Size of `black piece " + blackPiece.size());
-
-        System.out.println("SIZE OF PIECES DDDWSDSQDAWS " + pieces.size() );
 
         for(Piece p : pieces) {
             grid.add(p, p.getX(), p.getY());
         }
+
         for (Piece p : whitePiece) {
             p.setOnAction(event -> {
+                checkKing = (King) kingB;
                 if(pieceToMove != null && p.isWhite() != pieceToMove.isWhite()) {
                     int z = GridPane.getColumnIndex(p);
                     int t = GridPane.getRowIndex(p);
@@ -262,15 +280,23 @@ public class HelloApplication extends Application {
                         grid.getChildren().remove(p);
                         whitePiece.remove(p);
                         GridPane.setConstraints(pieceToMove, z, t);
+                        getAvailableSquare(pieceToMove);
                         pieceToMove = null;
-                    }} else {
-                pieceToMove = p;
-                    preparePossibleMovments(p);
+                        makeSquaresBlackWhite();
+
+
+                    } else {
+                        pieceToMove = p;
+                        getAvailableSquare(p);
+                    }
+                } else {
+                    pieceToMove = p;
                     getAvailableSquare(p);
-            }});
+                }});
         }
         for (Piece p : blackPiece) {
             p.setOnAction(event -> {
+                checkKing = (King) king;
                 if(pieceToMove != null && p.isWhite() != pieceToMove.isWhite()) {
                     int z = GridPane.getColumnIndex(p);
                     int t = GridPane.getRowIndex(p);
@@ -279,29 +305,39 @@ public class HelloApplication extends Application {
                         grid.getChildren().remove(p);
                         blackPiece.remove(p);
                         GridPane.setConstraints(pieceToMove, z, t);
+                        getAvailableSquare(pieceToMove);
                         pieceToMove = null;
-                    }} else {
+                        makeSquaresBlackWhite();
+
+                    } else {
+                        pieceToMove = p;
+                        getAvailableSquare(p);
+                    }
+                } else {
                     pieceToMove = p;
-                    preparePossibleMovments(p);
                     getAvailableSquare(p);
                 }});
         }
 
+
         for (Square r : setOfSquares) {
             r.setOnMouseClicked(event -> {
                 makeSquaresBlackWhite();
-            if(!availableSquares.contains(r)) {
-                    pieceToMove = null;
-                }
+
+                if(!availableSquares.contains(r)) {pieceToMove = null;}
+
                 int z = GridPane.getColumnIndex(r);
                 int t = GridPane.getRowIndex(r);
                 GridPane.setConstraints(pieceToMove, z, t);
+                getAvailableSquare(pieceToMove);
+                makeSquaresBlackWhite();
+                //SZACH BOOLEAN
+                //isCheck = isCheck(checkKing);
+                System.out.println("CZY JEST SZach:  " +isCheck(checkKing));
                 pieceToMove = null;
-
-                System.out.println("rozmiar setofSQQQQ: " + setOfSquares.size());
-                System.out.println("rozmiar available: " + availableSquares.size());;
                 });
         }
+
         mainPane.setCenter(grid);
         //Adding ToolBar down
         mainPane.setBottom(toolBarDown);
@@ -313,11 +349,9 @@ public class HelloApplication extends Application {
         primaryStage.show();
 
     }
-    public GridPane getGrid() {
-        return grid;
-    }
-
     public static void main(String[] args) {
+        System.out.println("Poczatek gry");
         launch();
+        System.out.println("Koniec gry");
     }
 }

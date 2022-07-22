@@ -22,18 +22,18 @@ public class Point extends Piece {
         if (!piece.isWhite()) {
             Square s1 = new Square(d, d, d, d, r, t + 1, 1);
             sqSet.add(s1);
-            if (firstMove) {
+            if (this.firstMove) {
                 Square s2 = new Square(d, d, d, d, r, t + 2, 1);
                 sqSet.add(s2);
-                firstMove = false;
+                this.firstMove = false;
             }
         } else {
             Square s1 = new Square(d, d, d, d, r, t - 1, 1);
             sqSet.add(s1);
-            if (firstMove) {
+            if (this.firstMove) {
                 Square s2 = new Square(d, d, d, d, r, t - 2, 1);
                 sqSet.add(s2);
-                firstMove = false;
+                this.firstMove = false;
             }
         }
         return correctSet(sqSet);

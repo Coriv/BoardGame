@@ -1,7 +1,6 @@
 package com.chess.chess;
 
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 
 import java.util.*;
 import java.util.stream.Collectors;

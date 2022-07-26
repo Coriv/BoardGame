@@ -4,7 +4,6 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -13,6 +12,9 @@ public abstract class Piece extends Button {
     private final boolean isWhite;
     private int x;
     private int y;
+
+    public void setExcludedSets(Set<Square> wxs, Set<Square> bex) {
+    }
 
     public Piece(String text, Node graphic, final boolean isWhite, int x, int y) {
         super(text, graphic);

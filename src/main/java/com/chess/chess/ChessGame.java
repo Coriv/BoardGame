@@ -40,7 +40,7 @@ public class ChessGame extends Application {
 
     private Piece pieceToMove;
     private Piece pieceToMoveRandom;
-    private boolean withComputer = true;
+    private boolean withComputer;
     private Set<Square> availableSquares;
     private Set<Square> setOfSquares = new HashSet<>();
     private Set<Piece> pieces  = new HashSet<>();
@@ -48,8 +48,7 @@ public class ChessGame extends Application {
     private static Set<Piece> blackPiece;
     private Set<Piece> setOfPointsW = new HashSet<>();
     private Set<Piece> setOfPointsB = new HashSet<>();
-    private Set<Square> allPossibleMoves;
-    private Set<Square> getAllPossibleMovesBlack;
+    private Set<Square> allPossibleMoves = new HashSet<>();
 
     private GridPane grid = new GridPane();
     private GridPane gridToEdit = new GridPane();
@@ -57,7 +56,6 @@ public class ChessGame extends Application {
     private Set<Square> excludedSetBlackPieces;
     private Set<Square> excludedSetWhitePieces;
     private int d = 93;
-
     private Set<Piece> piecesOnBoard;
     private King checkKing;
 
@@ -101,15 +99,11 @@ public class ChessGame extends Application {
         preparePieceOnBoardSet();
 
         excludedSetWhitePieces = piecesOnBoard.stream()
-                .filter(n -> n.isWhite())
+                .filter(Piece::isWhite)
                 .map(n -> new Square(1, 1, 1, 1, n.getX(), n.getY(), 1))
                 .collect(Collectors.toSet());
 
     }
-    void whosTurn(Piece piece) {
-
-    }
-
     Set<Square> preparePossibleMovments(Piece piece) {
         Set<Square> avaiablePieceSet = new HashSet<>();
         prepareExcludedSet();
@@ -165,29 +159,34 @@ public class ChessGame extends Application {
                 .collect(Collectors.toSet());
     }
 
-   /*void preparePossibleMovesToCheckWhite() {
-        for (Piece p : whitePiece) {
-            p.getAvailableSquareToMove(p);
-            makeSquaresBlackWhite();
-            allPossibleMovesWhite.addAll(availableSquares);
-        }
-   } */
-
     boolean isCheck(King king) {
         Square sq = new Square(1,1,1,1, king.getX(), king.getY(), 1);
-        allPossibleMoves = new HashSet<Square>();
-        //DODANE RANO
-        if(king.isWhite()) {
-
+        System.out.println("polozenie szachowanego krola" + king.getX() + " "  + king.getY());
+        allPossibleMoves = new HashSet<>();
+        if(!king.isWhite()) {
             for (Piece p : whitePiece) {
-            p.getAvailableSquareToMove(p);
+
+
+
+                setExcludedSetBlackPieces();
+                setExcludedSetWhitePieces();
+                p.setExcludedSets(excludedSetWhitePieces, excludedSetBlackPieces);
+
+            getAvailableSquare(p);
             makeSquaresBlackWhite();
             allPossibleMoves.addAll(availableSquares);
         }} else {
             for (Piece p : blackPiece) {
-                p.getAvailableSquareToMove(p);
+
+
+                setExcludedSetBlackPieces();
+                setExcludedSetWhitePieces();
+                p.setExcludedSets(excludedSetWhitePieces, excludedSetBlackPieces);
+
+                getAvailableSquare(p);
                 makeSquaresBlackWhite();
                 allPossibleMoves.addAll(availableSquares);
+
             }
         }
         return allPossibleMoves.contains(sq);
@@ -227,8 +226,7 @@ public class ChessGame extends Application {
         List<Piece> blackPieceList =  blackPiece.stream().toList();
 
         int randomPieceIndex = (int) (Math.random() *blackPieceList.size());
-        Piece randomPiece = blackPieceList.get(randomPieceIndex);
-        return randomPiece;
+        return blackPieceList.get(randomPieceIndex);
     }
 
   // @@@ SKAD WYJATEK SKORO KAZE MU SZUKAC AZ ZNAJDZIE NIE NULL ?
@@ -376,9 +374,7 @@ public class ChessGame extends Application {
             blackPiece.add(p);
             blackPiece.remove(pieceToRemove);
         }
-        p.setOnAction(event1 -> {
-            actionPiece(p);
-        });
+        p.setOnAction(event1 -> actionPiece(p));
     }
     void actionPiece(Piece p) {
         if (pieceToMove != null && p.isWhite() != pieceToMove.isWhite()) {
@@ -392,7 +388,6 @@ public class ChessGame extends Application {
                     whitePiece.remove(p);
                     if (pieceToMove instanceof Point && p.getY() == 7) {
                         showTransformationSceneBlack(pieceToMove);
-
                     }
                 } else {
                     blackPiece.remove(p);
@@ -404,18 +399,16 @@ public class ChessGame extends Application {
                 getAvailableSquare(pieceToMove);
                 pieceToMove = null;
                 makeSquaresBlackWhite();
-            } else {
+            } else if(!withComputer || (withComputer && p.isWhite())){
                 pieceToMove = p;
                 pieceToMoveRandom = p;
                 getAvailableSquare(p);
             }
-        } else {
+        } else if(!withComputer || (withComputer && p.isWhite())){
             pieceToMove = p;
             pieceToMoveRandom = p;
             getAvailableSquare(p);
         }
-        System.out.println("bps "  + blackPiece.size());
-        System.out.println("WHITE PIECE SIZW " + whitePiece.size());
         if (whitePiece.size() == 0 || blackPiece.size() == 0) {
            checkIsItEnd();
         }
@@ -425,15 +418,15 @@ public class ChessGame extends Application {
         Stage endOfGame = new Stage();
         String whoWon  ="";
         if (whitePiece.size() == 0) {
-            whoWon = "Black won";
+            whoWon = "Black pieces won";
         }
         if (blackPiece.size() == 0) {
-                whoWon = "White won";
+                whoWon = "White pieces won";
         }
 
         Label endOfGameLabel = new Label(whoWon);
              VBox vbox= new VBox(endOfGameLabel);
-            Scene endOfGameScene = new Scene(vbox, 100, 100);
+            Scene endOfGameScene = new Scene(vbox, 100, 50);
             endOfGame.setScene(endOfGameScene);
             endOfGame.setTitle("The winner is:");
              endOfGame.show();
@@ -462,7 +455,7 @@ public class ChessGame extends Application {
         startGrid.add(computer, 0, 0);
         startGrid.add(secondPlayer, 1,0);
 
-        Scene startingScene= new Scene(startGrid, 230, 115, Color.GRAY);
+        Scene startingScene= new Scene(startGrid, 230, 105, Color.GRAY);
         startStage.setScene(startingScene);
         startStage.setTitle("Play with: ");
         startStage.show();
@@ -473,7 +466,6 @@ public class ChessGame extends Application {
         BackgroundSize backgroundSize = new BackgroundSize(100, 100, true, true, true, false);
         BackgroundImage backgroundImage = new BackgroundImage(imageback, BackgroundRepeat.REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, backgroundSize);
         Background background = new Background(backgroundImage);
-
 
         BorderPane mainPane = new BorderPane();
         mainPane.setBackground(background);
@@ -519,8 +511,7 @@ public class ChessGame extends Application {
         }
 
         List<Piece> listOfWhitePiece = Arrays.asList(king, queen, bishop, bishop2, knight, knight2, rock,rock2);
-        whitePiece = listOfWhitePiece.stream()
-                        .collect(Collectors.toSet());
+        whitePiece = new HashSet<>(listOfWhitePiece);
         whitePiece.addAll(setOfPointsW);
 
         //Adding black pieces
@@ -537,8 +528,7 @@ public class ChessGame extends Application {
             setOfPointsB.add(pointB);
         }
         List<Piece> listOfBlackPiece = Arrays.asList(kingB, queenB, bishopB, bishop2B, knightB, knight2B, rockB,rock2B);
-        blackPiece = listOfBlackPiece.stream()
-                .collect(Collectors.toSet());
+        blackPiece = new HashSet<>(listOfBlackPiece);
         blackPiece.addAll(setOfPointsB);
 
         pieces.addAll(whitePiece);
@@ -551,68 +541,19 @@ public class ChessGame extends Application {
 
         for (Piece p : whitePiece) {
             p.setOnAction(event -> {
-                    actionPiece(p);
+                checkKing = (King) kingB;
+                actionPiece(p);
             });
         }
 
-                    //checkKing = (King) kingB;
-                   /* if (pieceToMove != null && p.isWhite() != pieceToMove.isWhite()) {
-                        int z = GridPane.getColumnIndex(p);
-                        int t = GridPane.getRowIndex(p);
-                        Square sq = new Square(d, d, d, d, z, t, 1);
-                        if (availableSquares.contains(sq)) {
-                            grid.getChildren().remove(p);
-                            whitePiece.remove(p);
-                            GridPane.setConstraints(pieceToMove, z, t);
-                            getAvailableSquare(pieceToMove);
-                            pieceToMove = null;
-                            makeSquaresBlackWhite();
-                        } else {
-                            pieceToMove = p;
-                            getAvailableSquare(p);
-                        }
-                    } else {
-                        pieceToMove = p;
-                        getAvailableSquare(p);
-                    }
-                });
-            } */
-
         for (Piece p : blackPiece) {
             p.setOnAction(event -> {
-
+                checkKing = (King) king;
                 actionPiece(p);
                 if(withComputer && pieceToMoveRandom != null && pieceToMoveRandom.isWhite() && blackPiece.size() != 0) {
                     makeRandomMove();
                     pieceToMoveRandom = null;
                 }
-                //checkKing = (King) king;
-               /* if(pieceToMove != null && p.isWhite() != pieceToMove.isWhite()) {
-                    int z = GridPane.getColumnIndex(p);
-                    int t = GridPane.getRowIndex(p);
-                    Square sq = new Square(d,d,d,d, z, t, 1);
-                    if(availableSquares.contains(sq)) {
-                        grid.getChildren().remove(p);
-                        blackPiece.remove(p);
-                        GridPane.setConstraints(pieceToMove, z, t);
-                        getAvailableSquare(pieceToMove);
-                        if(pieceToMove instanceof Point && pieceToMove.getY() ==0) {
-                            showTransformationSceneWhite(pieceToMove);
-                        }
-                        if(withComputer) {
-                            makeRandomMove();
-                        }
-                        pieceToMove = null;
-                        makeSquaresBlackWhite();
-
-                    } else {
-                        pieceToMove = p;
-                        getAvailableSquare(p);
-                    }
-                } else {
-                    pieceToMove = p;
-                    getAvailableSquare(p);
-                }}); */
         });}
 
 
@@ -620,25 +561,25 @@ public class ChessGame extends Application {
             r.setOnMouseClicked(event -> {
                 makeSquaresBlackWhite();
 
-                // Optional<Piece> piecep = Optional.ofNullable(pieceToMove);
+                /*Optional<Piece> optionalPiece = Optional.ofNullable(pieceToMove);
+                Piece optionalPieceToMove = optionalPiece.orElse(new Queen("", null, true, 0,0));
+                Optional<Set<Square>> optionalSquare = Optional.ofNullable(availableSquares);
+                Set<Square> optionalAvailableSquare = optionalSquare.orElse(new HashSet<>()); */
 
                 if(!availableSquares.contains(r)) {pieceToMove = null;}
 
-                if (withComputer && !pieceToMove.isWhite()) {
+                if (withComputer && !pieceToMove.isWhite()){
                         pieceToMove = null;
                     }
 
                 int z = GridPane.getColumnIndex(r);
                 int t = GridPane.getRowIndex(r);
-                try {
-                    GridPane.setConstraints(pieceToMove, z, t);
-                } catch (NullPointerException e) {
-                }
+                GridPane.setConstraints(pieceToMove, z, t);
+
                 getAvailableSquare(pieceToMove);
                 makeSquaresBlackWhite();
-
-                //isCheck = isCheck(checkKing);
-               // System.out.println("CZY JEST SZach:  " +isCheck(checkKing));
+                isCheck = isCheck(checkKing);
+                System.out.println(isCheck);
                 if(withComputer && blackPiece.size() != 0) {
                     makeRandomMove();
                 }
@@ -649,23 +590,22 @@ public class ChessGame extends Application {
                     showTransformationSceneBlack(pieceToMove);
                 }
                 pieceToMove = null;
+                pieceToMoveRandom = null;
                 }) ;
         }
 
         mainPane.setCenter(grid);
         //Adding ToolBar down
         mainPane.setBottom(toolBarDown);
-        Scene scene = new Scene(mainPane, 900, 900, Color.BLACK);
+        Scene scene = new Scene(mainPane, 780, 900, Color.BLACK);
 
-        primaryStage.setTitle("Chess");
+        primaryStage.setTitle("Some game, but not chess yet");
         primaryStage.setScene(scene);
         primaryStage.show();
 
         withWhoYouWantToPlay();
     }
     public static void main(String[] args) {
-        System.out.println("Poczatek gry");
         launch();
-        System.out.println("Koniec gry");
     }
 }
